@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CheemHang
 
 A social hangout coordination app that helps friends organize and manage their get-togethers, with a playful theme centered around the "Cheems" meme character.
@@ -47,3 +48,6 @@ CheemHang/
    - Update the URL scheme in `Info.plist` with your Google Client ID
 
 4. Build and run the project 
+=======
+# 0230_build
+>>>>>>> 34e149abec90233f9a6f363d87f8a1331b600fd6
