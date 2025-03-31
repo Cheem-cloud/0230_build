@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <true/>
+    </dict>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+    </array>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <!-- 
+    ===================== GOOGLE SIGN-IN CONFIGURATION =====================
+    IMPORTANT: Replace the placeholder values below with your actual values
+    from the Firebase console and Google Cloud Console.
+    See GOOGLE_SETUP.md for detailed instructions on how to obtain these values.
+    -->
+    
+    <!-- 
+    GIDClientID: This is your app's OAuth client ID for Google Sign-In
+    This should be copied from the CLIENT_ID field in GoogleService-Info.plist
+    Format: YOUR_CLIENT_ID.apps.googleusercontent.com
+    -->
+    <key>GIDClientID</key>
+    <string>29334965149-eg89vilk1c7abefjnrnm92kfm6op6n84.apps.googleusercontent.com</string>
+    
+    <!-- 
+    URL Schemes for Google Sign-In callback handling
+    This is necessary for the app to receive the authentication response
+    -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <!-- 
+                This should be the REVERSED_CLIENT_ID from your GoogleService-Info.plist
+                Format: com.googleusercontent.apps.YOUR_CLIENT_ID
+                -->
+                <string>com.googleusercontent.apps.29334965149-eg89vilk1c7abefjnrnm92kfm6op6n84</string>
+            </array>
+        </dict>
+    </array>
+    
+    <!-- Calendar permission explanation -->
+    <key>NSCalendarsUsageDescription</key>
+    <string>CheemHang needs access to your calendar to suggest hangout times that work for both you and your partner.</string>
+    
+    <!-- Schemes for deep linking to Google apps -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>googlegmail</string>
+        <string>googlecalendar</string>
+    </array>
+</dict>
+</plist> 
