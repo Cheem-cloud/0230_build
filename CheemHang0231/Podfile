@@ -1,0 +1,38 @@
+platform :ios, '15.0'
+
+target 'CheemHang0231' do
+  use_frameworks!
+  
+  # Firebase
+  pod 'Firebase/Core'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Firestore'
+  pod 'Firebase/Storage'
+  pod 'Firebase/Functions'
+  pod 'Firebase/Messaging'
+
+  # Google Sign In
+  pod 'GoogleSignIn'
+  pod 'GoogleSignInSwift'
+  
+  # Image loading
+  pod 'Kingfisher'
+  
+  target 'CheemHang0231Tests' do
+    inherit! :search_paths
+  end
+
+  target 'CheemHang0231UITests' do
+    inherit! :search_paths
+  end
+end
+
+# Fix for Xcode 15 issues
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+    end
+  end
+end

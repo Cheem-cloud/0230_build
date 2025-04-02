@@ -2,15 +2,47 @@ import SwiftUI
 
 // MARK: - Color Extensions
 extension Color {
-    // Hunter green and shades
-    static let hunterGreen = Color(red: 53/255, green: 94/255, blue: 59/255) // Main hunter green
-    static let hunterGreenLight = Color(red: 85/255, green: 126/255, blue: 91/255) // Lighter shade
-    static let hunterGreenDark = Color(red: 35/255, green: 70/255, blue: 40/255) // Darker shade
-    static let hunterGreenPale = Color(red: 209/255, green: 226/255, blue: 211/255) // Very light shade
+    // Primary colors
+    static let deepRed = Color(hex: "821d1d") // Base deep red
+    static let white = Color.white // White
     
-    // Accent colors to complement the hunter green
-    static let goldAccent = Color(red: 212/255, green: 175/255, blue: 55/255)
-    static let creamAccent = Color(red: 245/255, green: 240/255, blue: 225/255)
+    // Darker shades for depth
+    static let burgundy = Color(hex: "5f1515") // Dark burgundy for headers/accents
+    static let charcoal = Color(hex: "333333") // Charcoal gray for text/backgrounds
+    
+    // Light shades for contrast
+    static let softPink = Color(hex: "e8d9d9") // Subtle background/highlight
+    static let lightGray = Color(hex: "f5f5f5") // Secondary light background
+    
+    // Accent colors
+    static let mutedGold = Color(hex: "c49f48") // Highlights, call-to-action
+    static let tealGreen = Color(hex: "197d7d") // Complementary accent
+    
+    // Initialize a Color from a hex string
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+        
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
 }
 
 // Theme-related view modifiers
@@ -19,7 +51,7 @@ extension View {
     func primaryButtonStyle() -> some View {
         self
             .padding()
-            .background(Color.hunterGreenLight)
+            .background(Color.deepRed)
             .foregroundColor(.white)
             .cornerRadius(10)
     }
@@ -28,8 +60,8 @@ extension View {
     func secondaryButtonStyle() -> some View {
         self
             .padding()
-            .background(Color.hunterGreenPale)
-            .foregroundColor(Color.hunterGreen)
+            .background(Color.softPink)
+            .foregroundColor(Color.burgundy)
             .cornerRadius(10)
     }
     
@@ -37,8 +69,32 @@ extension View {
     func cardStyle() -> some View {
         self
             .padding()
-            .background(Color.hunterGreenDark)
+            .background(Color.white)
             .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .shadow(color: Color.charcoal.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // Apply premium styling to a card
+    func premiumCardStyle() -> some View {
+        self
+            .padding()
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.mutedGold, lineWidth: 1)
+            )
+            .cornerRadius(12)
+            .shadow(color: Color.charcoal.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // Apply floating pill style to navigation elements
+    func floatingPillStyle() -> some View {
+        self
+            .background(
+                RoundedRectangle(cornerRadius: 25)
+                    .fill(Color.deepRed)
+                    .shadow(color: Color.charcoal.opacity(0.2), radius: 4, x: 0, y: 2)
+            )
+            .padding(.horizontal)
     }
 } 

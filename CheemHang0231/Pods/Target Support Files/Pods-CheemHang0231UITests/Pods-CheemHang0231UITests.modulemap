@@ -1,0 +1,6 @@
+framework module Pods_CheemHang0231UITests {
+  umbrella header "Pods-CheemHang0231UITests-umbrella.h"
+
+  export *
+  module * { export * }
+}

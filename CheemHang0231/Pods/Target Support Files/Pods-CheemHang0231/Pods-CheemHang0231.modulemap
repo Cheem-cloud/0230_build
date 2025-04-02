@@ -1,0 +1,6 @@
+framework module Pods_CheemHang0231 {
+  umbrella header "Pods-CheemHang0231-umbrella.h"
+
+  export *
+  module * { export * }
+}

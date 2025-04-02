@@ -2,12 +2,16 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import Foundation
+import FirebaseMessaging
 
 @MainActor
 class ProfileViewModel: ObservableObject {
     @Published var personas: [Persona] = []
     @Published var isLoading = false
     @Published var error: Error?
+    @Published var displayName: String = ""
+    @Published var email: String = ""
+    @Published var bio: String = ""
     
     private let firestoreService = FirestoreService()
     
@@ -154,7 +158,7 @@ class ProfileViewModel: ObservableObject {
             
             // First, update the current default
             let currentDefault = personas.first(where: { $0.isDefault && $0.id != updatedPersona.id })
-            if let current = currentDefault, let currentId = current.id {
+            if let current = currentDefault, let _ = current.id {
                 print("DEBUG: Unsetting current default: \(current.name)")
                 var updatedCurrent = current
                 updatedCurrent.isDefault = false
@@ -164,7 +168,7 @@ class ProfileViewModel: ObservableObject {
             // Set the new default
             updatedPersona.isDefault = true
             print("DEBUG: Updating persona to be default: \(updatedPersona.name)")
-            if let id = updatedPersona.id {
+            if let _ = updatedPersona.id {
                 try await firestoreService.updatePersona(updatedPersona, for: userId)
                 print("DEBUG: Successfully updated persona as default")
             }
@@ -178,6 +182,53 @@ class ProfileViewModel: ObservableObject {
             print("DEBUG: Error setting default persona: \(error.localizedDescription)")
             await MainActor.run {
                 self.error = error
+            }
+        }
+    }
+    
+    func updateProfile(name: String, email: String, bio: String) async {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        isLoading = true
+        
+        do {
+            // Update Firebase Auth profile
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = name
+            try await changeRequest.commitChanges()
+            
+            // Update Firestore user document
+            var userData: [String: Any] = [
+                "displayName": name,
+                "bio": bio,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+            
+            if email != user.email {
+                // Use the new recommended method instead of updateEmail
+                try await user.sendEmailVerification(beforeUpdatingEmail: email)
+                userData["email"] = email
+            }
+            
+            // Get current FCM token and add to update if available
+            if let fcmToken = Messaging.messaging().fcmToken {
+                userData["fcmToken"] = fcmToken
+                print("DEBUG: Including FCM token in profile update: \(fcmToken)")
+            }
+            
+            let db = Firestore.firestore()
+            try await db.collection("users").document(user.uid).updateData(userData)
+            
+            DispatchQueue.main.async {
+                self.displayName = name
+                self.email = email
+                self.bio = bio
+                self.isLoading = false
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.error = error
+                self.isLoading = false
             }
         }
     }

@@ -1,7 +1,8 @@
 import SwiftUI
 import FirebaseAuth
+import Firebase
 import FirebaseFirestore
-import CheemHang
+import MapKit
 
 // Import explicit HangoutData struct
 typealias HangoutData = CreateHangoutViewModel.HangoutData
@@ -10,7 +11,7 @@ struct CreateHangoutView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var description = ""
-    @State private var date = Date().addingTimeInterval(60 * 60 * 24) // Tomorrow by default
+    @State private var date = Date()
     @State private var duration: Duration = .oneHour
     @State private var location = ""
     @State private var friendId = ""
@@ -428,7 +429,10 @@ struct NewHangoutRequest {
     CreateHangoutView(onComplete: {})
 }
 
-// Add the Duration enum
+// Additional helper view functions and definitions go here
+
+// Hide this Duration definition for now to avoid ambiguity
+/*
 enum Duration: CaseIterable {
     case thirtyMinutes
     case oneHour
@@ -452,4 +456,5 @@ enum Duration: CaseIterable {
         case .fourHours: return 4 * 60 * 60
         }
     }
-} 
+}
+*/ 

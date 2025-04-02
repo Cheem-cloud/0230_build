@@ -84,8 +84,24 @@ class FirestoreService {
             userCopy.id = docRef.documentID
             
             try await docRef.setDataAsync(from: userCopy)
+            
+            // Initialize FCM token field if it doesn't exist
+            try await docRef.updateData([
+                "fcmToken": FieldValue.delete()
+            ])
+            
+            // Initialize user's settings
+            try? await docRef.collection("settings").document("preferences").setData([
+                "notificationsEnabled": true,
+                "calendarSyncEnabled": true,
+                "createdAt": FieldValue.serverTimestamp(),
+                "updatedAt": FieldValue.serverTimestamp()
+            ])
+            
+            print("DEBUG: Successfully created user document for \(docRef.documentID)")
             return docRef.documentID
         } catch {
+            print("DEBUG: Failed to create user document: \(error.localizedDescription)")
             throw FirestoreError.failedToCreate
         }
     }
@@ -329,21 +345,32 @@ class FirestoreService {
     // MARK: - Hangout Operations
     
     func getHangouts(for userID: String) async throws -> [Hangout] {
+        print("🔍 GETTING HANGOUTS for user: \(userID)")
         do {
             let creatorSnapshot = try await db.collection(hangoutsCollection)
                 .whereField("creatorID", isEqualTo: userID)
                 .getDocuments()
             
+            print("📥 Found \(creatorSnapshot.documents.count) hangouts where user is creator")
+            
             let inviteeSnapshot = try await db.collection(hangoutsCollection)
                 .whereField("inviteeID", isEqualTo: userID)
                 .getDocuments()
             
+            print("📥 Found \(inviteeSnapshot.documents.count) hangouts where user is invitee")
+            
             var hangouts = creatorSnapshot.documents.compactMap { try? $0.data(as: Hangout.self) }
             hangouts += inviteeSnapshot.documents.compactMap { try? $0.data(as: Hangout.self) }
+            
+            // Log each hangout for debugging
+            for hangout in hangouts {
+                print("📋 Hangout: ID=\(hangout.id ?? "nil"), Status=\(hangout.status.rawValue), Creator=\(hangout.creatorID), Invitee=\(hangout.inviteeID)")
+            }
             
             // Remove duplicates (in case user is both creator and invitee somehow)
             return Array(Set(hangouts)).sorted { $0.startDate < $1.startDate }
         } catch {
+            print("❌ ERROR fetching hangouts: \(error.localizedDescription)")
             throw FirestoreError.failedToFetch
         }
     }
@@ -446,6 +473,92 @@ class FirestoreService {
         let docRef = db.collection(friendshipsCollection).document("\(userId)_\(friendId)")
         
         try await docRef.setDataAsync(from: friendship)
+    }
+    
+    // MARK: - FCM Token Management
+    
+    func saveFCMToken(_ token: String, for userId: String) async throws {
+        do {
+            print("DEBUG: Saving FCM token for user \(userId)")
+            let userDocRef = db.collection(usersCollection).document(userId)
+            try await userDocRef.updateData([
+                "fcmToken": token,
+                "updatedAt": FieldValue.serverTimestamp()
+            ])
+            print("DEBUG: Successfully saved FCM token")
+        } catch {
+            print("DEBUG: Failed to save FCM token: \(error.localizedDescription)")
+            
+            // Try to create the user document if it doesn't exist
+            do {
+                let userDocRef = db.collection(usersCollection).document(userId)
+                try await userDocRef.setData([
+                    "fcmToken": token,
+                    "id": userId,
+                    "displayName": Auth.auth().currentUser?.displayName ?? "User",
+                    "email": Auth.auth().currentUser?.email ?? "",
+                    "photoURL": Auth.auth().currentUser?.photoURL?.absoluteString ?? "",
+                    "createdAt": FieldValue.serverTimestamp(),
+                    "updatedAt": FieldValue.serverTimestamp()
+                ])
+                print("DEBUG: Created new user document with FCM token")
+            } catch {
+                print("DEBUG: Failed to create user document with FCM token: \(error.localizedDescription)")
+                throw FirestoreError.failedToSave
+            }
+        }
+    }
+    
+    // MARK: - User Data
+    
+    func saveUserData(_ userData: [String: Any], for userId: String) async throws {
+        try await db.collection("users").document(userId).setData(userData, merge: true)
+    }
+    
+    func getUserData(for userId: String) async throws -> [String: Any]? {
+        let document = try await db.collection("users").document(userId).getDocument()
+        return document.data()
+    }
+    
+    // MARK: - FCM Tokens
+    
+    func getFCMToken(for userId: String) async throws -> String? {
+        let userData = try await getUserData(for: userId)
+        return userData?["fcmToken"] as? String
+    }
+    
+    // MARK: - Personas
+    
+    func getPersona(id: String, userId: String) async throws -> Persona? {
+        do {
+            let document = try await db.collection("users").document(userId).collection("personas").document(id).getDocument()
+            
+            guard document.exists else {
+                print("Persona document does not exist")
+                return nil
+            }
+            
+            return try document.data(as: Persona.self)
+        } catch {
+            print("Error getting persona: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    // MARK: - Hangouts
+    
+    func createHangout(_ hangoutData: [String: Any]) async throws -> String {
+        let docRef = try await db.collection("hangouts").addDocument(data: hangoutData)
+        return docRef.documentID
+    }
+    
+    func updateHangout(id: String, data: [String: Any]) async throws {
+        try await db.collection("hangouts").document(id).setData(data, merge: true)
+    }
+    
+    func getHangout(id: String) async throws -> [String: Any]? {
+        let document = try await db.collection("hangouts").document(id).getDocument()
+        return document.data()
     }
 }
 

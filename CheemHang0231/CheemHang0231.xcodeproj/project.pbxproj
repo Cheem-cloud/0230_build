@@ -7,16 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D867C3D42D9AEA0B00BB19A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D867C3A62D9AE7FF00BB19A9 /* GoogleService-Info.plist */; };
-		D867C4102D9AEB8800BB19A9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D867C40F2D9AEB8800BB19A9 /* GoogleSignIn */; };
-		D867C4122D9AEB8C00BB19A9 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D867C4112D9AEB8C00BB19A9 /* GoogleSignInSwift */; };
-		D8AB97BD2D9AECF300807024 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97BC2D9AECF300807024 /* Kingfisher */; };
-		D8AB97C92D9AEDD800807024 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97C82D9AEDD800807024 /* FirebaseAuth */; };
-		D8AB97CB2D9AEDD800807024 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97CA2D9AEDD800807024 /* FirebaseCore */; };
-		D8AB97CD2D9AEDD800807024 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97CC2D9AEDD800807024 /* FirebaseFirestore */; };
-		D8AB97CF2D9AEDD800807024 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97CE2D9AEDD800807024 /* FirebaseFirestoreCombine-Community */; };
-		D8AB97D12D9AEDD800807024 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97D02D9AEDD800807024 /* FirebaseStorage */; };
-		D8AB97D32D9AEDD800807024 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = D8AB97D22D9AEDD800807024 /* FirebaseStorageCombine-Community */; };
+		6B5AB225137118333ADE4034 /* Pods_CheemHang0231.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B096BF9F6E182B20B2A90947 /* Pods_CheemHang0231.framework */; };
+		9A51812829E43B4E05F36BCD /* Pods_CheemHang0231Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DC253FC7A06E16986893FD7 /* Pods_CheemHang0231Tests.framework */; };
+		BCB3C68D0A9429B902D4B3E5 /* Pods_CheemHang0231UITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B95B2C3FD05CE94079E41A9A /* Pods_CheemHang0231UITests.framework */; };
+		D8AB9A372D9C353B00807024 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D8AB9A362D9C353B00807024 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,11 +31,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1DC253FC7A06E16986893FD7 /* Pods_CheemHang0231Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CheemHang0231Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B82CEED94DD796F71E195A5 /* Pods-CheemHang0231.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231.release.xcconfig"; path = "Target Support Files/Pods-CheemHang0231/Pods-CheemHang0231.release.xcconfig"; sourceTree = "<group>"; };
+		3EE7AC9BB63CC74939661574 /* Pods-CheemHang0231UITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231UITests.release.xcconfig"; path = "Target Support Files/Pods-CheemHang0231UITests/Pods-CheemHang0231UITests.release.xcconfig"; sourceTree = "<group>"; };
+		59492E3460DB2473612683F3 /* Pods-CheemHang0231Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231Tests.release.xcconfig"; path = "Target Support Files/Pods-CheemHang0231Tests/Pods-CheemHang0231Tests.release.xcconfig"; sourceTree = "<group>"; };
+		87C356C86B3DCA98260E1C12 /* Pods-CheemHang0231UITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231UITests.debug.xcconfig"; path = "Target Support Files/Pods-CheemHang0231UITests/Pods-CheemHang0231UITests.debug.xcconfig"; sourceTree = "<group>"; };
+		97965423FBAAE33CA3A8011F /* Pods-CheemHang0231.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231.debug.xcconfig"; path = "Target Support Files/Pods-CheemHang0231/Pods-CheemHang0231.debug.xcconfig"; sourceTree = "<group>"; };
+		B096BF9F6E182B20B2A90947 /* Pods_CheemHang0231.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CheemHang0231.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B32B5D00EB68350A7FB67D07 /* Pods-CheemHang0231Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CheemHang0231Tests.debug.xcconfig"; path = "Target Support Files/Pods-CheemHang0231Tests/Pods-CheemHang0231Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		B95B2C3FD05CE94079E41A9A /* Pods_CheemHang0231UITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CheemHang0231UITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85DD1192D9AD612008F1567 /* CheemHang0231.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CheemHang0231.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85DD1292D9AD614008F1567 /* CheemHang0231Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CheemHang0231Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85DD1332D9AD614008F1567 /* CheemHang0231UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CheemHang0231UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85DD1672D9AD710008F1567 /* CheemHang0231.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CheemHang0231.xcodeproj; sourceTree = "<group>"; };
-		D867C3A62D9AE7FF00BB19A9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D8AB9A362D9C353B00807024 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -80,15 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D867C4102D9AEB8800BB19A9 /* GoogleSignIn in Frameworks */,
-				D8AB97CB2D9AEDD800807024 /* FirebaseCore in Frameworks */,
-				D8AB97BD2D9AECF300807024 /* Kingfisher in Frameworks */,
-				D867C4122D9AEB8C00BB19A9 /* GoogleSignInSwift in Frameworks */,
-				D8AB97C92D9AEDD800807024 /* FirebaseAuth in Frameworks */,
-				D8AB97D12D9AEDD800807024 /* FirebaseStorage in Frameworks */,
-				D8AB97CD2D9AEDD800807024 /* FirebaseFirestore in Frameworks */,
-				D8AB97D32D9AEDD800807024 /* FirebaseStorageCombine-Community in Frameworks */,
-				D8AB97CF2D9AEDD800807024 /* FirebaseFirestoreCombine-Community in Frameworks */,
+				6B5AB225137118333ADE4034 /* Pods_CheemHang0231.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +91,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A51812829E43B4E05F36BCD /* Pods_CheemHang0231Tests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,21 +99,46 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCB3C68D0A9429B902D4B3E5 /* Pods_CheemHang0231UITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2E35EB876831B382EB82930C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B096BF9F6E182B20B2A90947 /* Pods_CheemHang0231.framework */,
+				1DC253FC7A06E16986893FD7 /* Pods_CheemHang0231Tests.framework */,
+				B95B2C3FD05CE94079E41A9A /* Pods_CheemHang0231UITests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5190BF32CEA364B1CAF7C5F4 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				97965423FBAAE33CA3A8011F /* Pods-CheemHang0231.debug.xcconfig */,
+				2B82CEED94DD796F71E195A5 /* Pods-CheemHang0231.release.xcconfig */,
+				B32B5D00EB68350A7FB67D07 /* Pods-CheemHang0231Tests.debug.xcconfig */,
+				59492E3460DB2473612683F3 /* Pods-CheemHang0231Tests.release.xcconfig */,
+				87C356C86B3DCA98260E1C12 /* Pods-CheemHang0231UITests.debug.xcconfig */,
+				3EE7AC9BB63CC74939661574 /* Pods-CheemHang0231UITests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		D85DD1102D9AD612008F1567 = {
 			isa = PBXGroup;
 			children = (
-				D867C3A62D9AE7FF00BB19A9 /* GoogleService-Info.plist */,
+				D8AB9A362D9C353B00807024 /* GoogleService-Info.plist */,
 				D85DD11B2D9AD612008F1567 /* CheemHang0231 */,
 				D85DD12C2D9AD614008F1567 /* CheemHang0231Tests */,
 				D85DD1362D9AD614008F1567 /* CheemHang0231UITests */,
-				D867C40E2D9AEB8800BB19A9 /* Frameworks */,
 				D85DD11A2D9AD612008F1567 /* Products */,
+				5190BF32CEA364B1CAF7C5F4 /* Pods */,
+				2E35EB876831B382EB82930C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -138,13 +159,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D867C40E2D9AEB8800BB19A9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -152,9 +166,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D85DD13D2D9AD614008F1567 /* Build configuration list for PBXNativeTarget "CheemHang0231" */;
 			buildPhases = (
+				5B2AA2B10DABE1946CFD15BB /* [CP] Check Pods Manifest.lock */,
 				D85DD1152D9AD612008F1567 /* Sources */,
 				D85DD1162D9AD612008F1567 /* Frameworks */,
 				D85DD1172D9AD612008F1567 /* Resources */,
+				DCFA6CD979CB033C5E0C82F1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -164,17 +180,6 @@
 				D85DD11B2D9AD612008F1567 /* CheemHang0231 */,
 			);
 			name = CheemHang0231;
-			packageProductDependencies = (
-				D867C40F2D9AEB8800BB19A9 /* GoogleSignIn */,
-				D867C4112D9AEB8C00BB19A9 /* GoogleSignInSwift */,
-				D8AB97BC2D9AECF300807024 /* Kingfisher */,
-				D8AB97C82D9AEDD800807024 /* FirebaseAuth */,
-				D8AB97CA2D9AEDD800807024 /* FirebaseCore */,
-				D8AB97CC2D9AEDD800807024 /* FirebaseFirestore */,
-				D8AB97CE2D9AEDD800807024 /* FirebaseFirestoreCombine-Community */,
-				D8AB97D02D9AEDD800807024 /* FirebaseStorage */,
-				D8AB97D22D9AEDD800807024 /* FirebaseStorageCombine-Community */,
-			);
 			productName = CheemHang0231;
 			productReference = D85DD1192D9AD612008F1567 /* CheemHang0231.app */;
 			productType = "com.apple.product-type.application";
@@ -183,6 +188,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D85DD1402D9AD614008F1567 /* Build configuration list for PBXNativeTarget "CheemHang0231Tests" */;
 			buildPhases = (
+				DBC92B20410A8557FF10700D /* [CP] Check Pods Manifest.lock */,
 				D85DD1252D9AD614008F1567 /* Sources */,
 				D85DD1262D9AD614008F1567 /* Frameworks */,
 				D85DD1272D9AD614008F1567 /* Resources */,
@@ -196,8 +202,6 @@
 				D85DD12C2D9AD614008F1567 /* CheemHang0231Tests */,
 			);
 			name = CheemHang0231Tests;
-			packageProductDependencies = (
-			);
 			productName = CheemHang0231Tests;
 			productReference = D85DD1292D9AD614008F1567 /* CheemHang0231Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -206,6 +210,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D85DD1432D9AD614008F1567 /* Build configuration list for PBXNativeTarget "CheemHang0231UITests" */;
 			buildPhases = (
+				029F075EF7F83BAC9FE07309 /* [CP] Check Pods Manifest.lock */,
 				D85DD12F2D9AD614008F1567 /* Sources */,
 				D85DD1302D9AD614008F1567 /* Frameworks */,
 				D85DD1312D9AD614008F1567 /* Resources */,
@@ -219,8 +224,6 @@
 				D85DD1362D9AD614008F1567 /* CheemHang0231UITests */,
 			);
 			name = CheemHang0231UITests;
-			packageProductDependencies = (
-			);
 			productName = CheemHang0231UITests;
 			productReference = D85DD1332D9AD614008F1567 /* CheemHang0231UITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -258,9 +261,7 @@
 			mainGroup = D85DD1102D9AD612008F1567;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				D89ADFE32D9AD8E50059B084 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
-				D8AB97BB2D9AECF300807024 /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D824699A2D9D91F500CB1125 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D85DD11A2D9AD612008F1567 /* Products */;
@@ -285,7 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D867C3D42D9AEA0B00BB19A9 /* GoogleService-Info.plist in Resources */,
+				D8AB9A372D9C353B00807024 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,6 +305,92 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		029F075EF7F83BAC9FE07309 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CheemHang0231UITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5B2AA2B10DABE1946CFD15BB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CheemHang0231-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DBC92B20410A8557FF10700D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CheemHang0231Tests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DCFA6CD979CB033C5E0C82F1 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CheemHang0231/Pods-CheemHang0231-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CheemHang0231/Pods-CheemHang0231-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CheemHang0231/Pods-CheemHang0231-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D85DD1152D9AD612008F1567 /* Sources */ = {
@@ -464,9 +551,11 @@
 		};
 		D85DD13E2D9AD614008F1567 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 97965423FBAAE33CA3A8011F /* Pods-CheemHang0231.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CheemHang0231/CheemHang0231.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"CheemHang0231/Preview Content\"";
@@ -495,9 +584,11 @@
 		};
 		D85DD13F2D9AD614008F1567 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2B82CEED94DD796F71E195A5 /* Pods-CheemHang0231.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CheemHang0231/CheemHang0231.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"CheemHang0231/Preview Content\"";
@@ -526,6 +617,7 @@
 		};
 		D85DD1412D9AD614008F1567 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B32B5D00EB68350A7FB67D07 /* Pods-CheemHang0231Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -545,6 +637,7 @@
 		};
 		D85DD1422D9AD614008F1567 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 59492E3460DB2473612683F3 /* Pods-CheemHang0231Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -564,6 +657,7 @@
 		};
 		D85DD1442D9AD614008F1567 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 87C356C86B3DCA98260E1C12 /* Pods-CheemHang0231UITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -581,6 +675,7 @@
 		};
 		D85DD1452D9AD614008F1567 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3EE7AC9BB63CC74939661574 /* Pods-CheemHang0231UITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -638,79 +733,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		D89ADFE32D9AD8E50059B084 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
-		D8AB97BB2D9AECF300807024 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.3.1;
-			};
-		};
-		D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		D824699A2D9D91F500CB1125 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 11.10.0;
+				minimumVersion = 11.11.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		D867C40F2D9AEB8800BB19A9 /* GoogleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D89ADFE32D9AD8E50059B084 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
-			productName = GoogleSignIn;
-		};
-		D867C4112D9AEB8C00BB19A9 /* GoogleSignInSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D89ADFE32D9AD8E50059B084 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
-			productName = GoogleSignInSwift;
-		};
-		D8AB97BC2D9AECF300807024 /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97BB2D9AECF300807024 /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
-		D8AB97C82D9AEDD800807024 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
-		D8AB97CA2D9AEDD800807024 /* FirebaseCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCore;
-		};
-		D8AB97CC2D9AEDD800807024 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		D8AB97CE2D9AEDD800807024 /* FirebaseFirestoreCombine-Community */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = "FirebaseFirestoreCombine-Community";
-		};
-		D8AB97D02D9AEDD800807024 /* FirebaseStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseStorage;
-		};
-		D8AB97D22D9AEDD800807024 /* FirebaseStorageCombine-Community */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D8AB97C72D9AEDD800807024 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = "FirebaseStorageCombine-Community";
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D85DD1112D9AD612008F1567 /* Project object */;
 }

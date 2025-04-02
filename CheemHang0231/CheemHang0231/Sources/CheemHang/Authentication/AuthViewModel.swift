@@ -2,7 +2,10 @@ import Foundation
 import Firebase
 import FirebaseAuth
 import GoogleSignIn
-import GoogleSignInSwift
+import SwiftUI
+import FirebaseFirestore
+import FirebaseMessaging
+import UIKit
 
 enum AuthState {
     case signedIn
@@ -16,9 +19,14 @@ class AuthViewModel: ObservableObject {
     @Published var authState: AuthState = .loading
     @Published var error: Error?
     @Published var isLoading: Bool = false
+    @Published var state: AuthState = .loading
+    @Published var errorMessage: String?
     
     // Store auth state listener handle
     private var authStateListener: AuthStateDidChangeListenerHandle?
+    
+    private let db = Firestore.firestore()
+    private let firestoreService = FirestoreService()
     
     var isSignedIn: Bool {
         return user != nil
@@ -29,13 +37,40 @@ class AuthViewModel: ObservableObject {
         setupAuthStateListener()
     }
     
-    private func setupAuthStateListener() {
+    func setupAuthStateListener() {
         print("AuthViewModel: Setting up auth state listener")
         authStateListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {
                 self?.user = user
-                self?.authState = user != nil ? .signedIn : .signedOut
-                print("AuthViewModel: Auth state changed to \(user != nil ? "signedIn" : "signedOut")")
+                if let user = user {
+                    print("AuthViewModel: Auth state changed to signedIn")
+                    self?.authState = .signedIn
+                    self?.updateUserFCMToken(userId: user.uid)
+                } else {
+                    print("AuthViewModel: Auth state changed to signedOut")
+                    self?.authState = .signedOut
+                    self?.deleteFCMToken()
+                }
+            }
+        }
+    }
+    
+    private func updateUserFCMToken(userId: String) {
+        if let token = Messaging.messaging().fcmToken {
+            print("AuthViewModel: Updating FCM token for user \(userId)")
+            Task {
+                try? await firestoreService.saveFCMToken(token, for: userId)
+            }
+        }
+    }
+    
+    private func deleteFCMToken() {
+        // Remove the FCM token on sign out
+        Messaging.messaging().deleteToken { error in
+            if let error = error {
+                print("AuthViewModel: Error deleting FCM token: \(error)")
+            } else {
+                print("AuthViewModel: Successfully deleted FCM token")
             }
         }
     }
@@ -116,9 +151,8 @@ class AuthViewModel: ObservableObject {
     }
     
     deinit {
-        // Remove listener when viewmodel is deallocated
-        if let authStateListener = authStateListener {
-            Auth.auth().removeStateDidChangeListener(authStateListener)
+        if let handle = authStateListener {
+            Auth.auth().removeStateDidChangeListener(handle)
         }
     }
 } 

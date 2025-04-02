@@ -233,7 +233,7 @@ struct PersonaFormView: View {
                     
                     // Create a task and handle completion using continuation
                     let downloadURL = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<URL, Error>) in
-                        let uploadTask = personaImagesRef.putData(compressedData, metadata: metadata) { metadata, error in
+                        _ = personaImagesRef.putData(compressedData, metadata: metadata) { metadata, error in
                             if let error = error {
                                 print("DEBUG: Image upload failed: \(error.localizedDescription)")
                                 continuation.resume(throwing: error)
@@ -275,7 +275,7 @@ struct PersonaFormView: View {
                 if isEditing, let personaId = persona?.id {
                     print("DEBUG: Updating existing persona")
                     // Create a Persona object with the updated values
-                    var updatedPersona = Persona(
+                    let updatedPersona = Persona(
                         id: personaId,
                         name: name,
                         description: description,

@@ -51,8 +51,8 @@ class PersonasViewModel: ObservableObject {
             isDefault: makeDefault || personas.isEmpty // First persona is default
         )
         
-        let personaId = try await firestoreService.createPersona(newPersona, for: userId)
-        // This value could be used, but we'll just acknowledge it was returned
+        // This value could be used in the future if needed
+        _ = try await firestoreService.createPersona(newPersona, for: userId)
     }
     
     private func updateDefaultPersonaStatus(makeDefault: Bool) async {

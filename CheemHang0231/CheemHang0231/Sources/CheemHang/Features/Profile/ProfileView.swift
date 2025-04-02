@@ -11,158 +11,141 @@ struct ProfileView: View {
     @State private var showingCalendarSettings = false
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if viewModel.personas.isEmpty && !viewModel.isLoading {
-                        VStack(spacing: 20) {
-                            Text("No personas found")
-                                .font(.headline)
-                            
-                            Text("Tap the + button to create a new persona")
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary)
-                            
-                            Button {
-                                showingCreatePersona = true
-                            } label: {
-                                Text("Create Your First Persona")
-                                    .padding()
-                                    .background(Color.hunterGreen)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ScrollView {
+            VStack(spacing: 20) {
+                if viewModel.personas.isEmpty && !viewModel.isLoading {
+                    EmptyProfileState()
+                } else {
+                    if viewModel.isLoading {
+                        ProgressView("Loading personas...")
+                            .frame(maxWidth: .infinity, minHeight: 100)
+                            .padding()
                     } else {
-                        if viewModel.isLoading {
-                            ProgressView("Loading personas...")
-                                .padding()
-                        } else {
+                        VStack(spacing: 12) {
                             ForEach(viewModel.personas) { persona in
                                 PersonaCard(persona: persona)
                                     .onTapGesture {
                                         showingEditPersona = persona
                                     }
                             }
-                            .padding(.horizontal)
                         }
+                        .padding(.horizontal)
                     }
-                    
-                    // Add calendar integration button
-                    Button {
-                        showingCalendarSettings = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "calendar.badge.plus")
-                                .foregroundColor(.hunterGreen)
-                            Text("Calendar Integration")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
-                        }
+                }
+                
+                // Add calendar integration button
+                Button {
+                    showingCalendarSettings = true
+                } label: {
+                    HStack {
+                        Image(systemName: "calendar.badge.plus")
+                            .foregroundColor(.hunterGreen)
+                        Text("Calendar Integration")
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(Color.hunterGreenPale.opacity(0.3))
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+                
+                // Sign Out Button
+                Button {
+                    authViewModel.signOut()
+                } label: {
+                    Text("Sign Out")
+                        .fontWeight(.medium)
                         .padding()
-                        .background(Color.hunterGreenPale.opacity(0.3))
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red)
+                        .foregroundColor(.white)
                         .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Sign Out Button
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
+            }
+            .padding(.top, 16)
+        }
+        .navigationTitle("Profile")
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 16) {
                     Button {
-                        authViewModel.signOut()
+                        viewModel.loadPersonas()
                     } label: {
-                        Text("Sign Out")
-                            .fontWeight(.medium)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.red)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.orange)
                     }
-                    .padding(.top, 20)
-                }
-                .navigationBarTitle("Profile", displayMode: .inline)
-                .foregroundColor(.white)
-                .toolbarColorScheme(.dark, for: .navigationBar)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack {
-                            Button {
-                                viewModel.loadPersonas()
-                            } label: {
-                                Image(systemName: "arrow.clockwise")
-                                    .foregroundColor(.orange)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
-                            
-                            Button {
-                                showingCreatePersona = true
-                            } label: {
-                                Image(systemName: "plus")
-                            }
-                            
-                            #if DEBUG
-                            Button {
-                                createTestPersona()
-                            } label: {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.red)
-                            }
-                            
-                            Button {
-                                testAppPathPersonaCreation()
-                            } label: {
-                                Image(systemName: "testtube.2")
-                                    .foregroundColor(.purple)
-                            }
-                            #endif
+                    .buttonStyle(BorderlessButtonStyle())
+                    
+                    Button {
+                        showingCreatePersona = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    
+                    #if DEBUG
+                    Menu {
+                        Button {
+                            createTestPersona()
+                        } label: {
+                            Label("Test Persona", systemImage: "exclamationmark.triangle")
                         }
+                        
+                        Button {
+                            testAppPathPersonaCreation()
+                        } label: {
+                            Label("App Path Test", systemImage: "testtube.2")
+                        }
+                    } label: {
+                        Image(systemName: "gear")
+                            .foregroundColor(.gray)
                     }
-                }
-                .onAppear {
-                    viewModel.loadPersonas()
+                    #endif
                 }
             }
-            .refreshable {
-                print("DEBUG: Manual refresh initiated")
+        }
+        .onAppear {
+            viewModel.loadPersonas()
+        }
+        .sheet(isPresented: $showingCreatePersona, onDismiss: {
+            viewModel.loadPersonas()
+        }) {
+            PersonaFormView(viewModel: viewModel, persona: nil, onComplete: {
+                print("DEBUG: Create persona onComplete called")
                 viewModel.loadPersonas()
-            }
-            .sheet(isPresented: $showingCreatePersona, onDismiss: {
+            })
+        }
+        .sheet(item: $showingEditPersona, onDismiss: {
+            print("DEBUG: Edit persona sheet dismissed")
+            viewModel.loadPersonas()
+        }) { persona in
+            PersonaFormView(viewModel: viewModel, persona: persona, onComplete: {
+                print("DEBUG: Edit persona onComplete called")
                 viewModel.loadPersonas()
-            }) {
-                PersonaFormView(viewModel: viewModel, persona: nil, onComplete: {
-                    print("DEBUG: Create persona onComplete called")
-                    viewModel.loadPersonas()
-                })
+            })
+        }
+        .sheet(isPresented: $showingCalendarSettings) {
+            GoogleCalendarAuthView()
+        }
+        .onChange(of: viewModel.personas) { oldValue, newValue in
+            print("DEBUG: Personas changed from \(oldValue.count) to \(newValue.count)")
+        }
+        .alert("Error", isPresented: .init(
+            get: { viewModel.error != nil },
+            set: { if !$0 { viewModel.error = nil } }
+        )) {
+            Button("OK") {
+                viewModel.error = nil
             }
-            .sheet(item: $showingEditPersona, onDismiss: {
-                print("DEBUG: Edit persona sheet dismissed")
-                viewModel.loadPersonas()
-            }) { persona in
-                PersonaFormView(viewModel: viewModel, persona: persona, onComplete: {
-                    print("DEBUG: Edit persona onComplete called")
-                    viewModel.loadPersonas()
-                })
-            }
-            .sheet(isPresented: $showingCalendarSettings) {
-                GoogleCalendarAuthView()
-            }
-            .onChange(of: viewModel.personas) { oldValue, newValue in
-                print("DEBUG: Personas changed from \(oldValue.count) to \(newValue.count)")
-            }
-            .alert("Error", isPresented: .init(
-                get: { viewModel.error != nil },
-                set: { if !$0 { viewModel.error = nil } }
-            )) {
-                Button("OK") {
-                    viewModel.error = nil
-                }
-            } message: {
-                if let error = viewModel.error {
-                    Text(error.localizedDescription)
-                }
+        } message: {
+            if let error = viewModel.error {
+                Text(error.localizedDescription)
             }
         }
     }
@@ -321,6 +304,44 @@ struct PersonaCardDetailed: View {
         .padding()
         .background(Color.hunterGreenDark)
         .cornerRadius(12)
+    }
+}
+
+struct EmptyProfileState: View {
+    @State private var showingCreatePersona = false
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "person.crop.circle.badge.plus")
+                .font(.system(size: 80))
+                .foregroundColor(.gray.opacity(0.7))
+            
+            Text("No personas found")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            Text("Create personas to represent different facets of yourself when meeting with others.")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 32)
+            
+            Button {
+                showingCreatePersona = true
+            } label: {
+                Text("Create Your First Persona")
+                    .fontWeight(.medium)
+                    .padding()
+                    .frame(maxWidth: 280)
+                    .background(Color.hunterGreen)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, minHeight: 400)
+        .sheet(isPresented: $showingCreatePersona) {
+            PersonaFormView(viewModel: ProfileViewModel(), persona: nil, onComplete: {})
+        }
     }
 }
 

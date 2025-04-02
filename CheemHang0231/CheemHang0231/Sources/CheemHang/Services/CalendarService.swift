@@ -17,6 +17,9 @@ class CalendarService {
     static let shared = CalendarService()
     
     private let baseURL = "https://www.googleapis.com/calendar/v3"
+    private let db = Firestore.firestore()
+    
+    private init() {}
     
     func checkAvailability(userId: String, startDate: Date, endDate: Date) async -> Bool {
         do {
@@ -150,6 +153,18 @@ class CalendarService {
 
         print("CalendarService: Finding mutual availability for \(userIDs)")
         
+        // First check if both users have calendar access
+        let user1HasAccess = await hasCalendarAccess(for: userIDs[0])
+        let user2HasAccess = await hasCalendarAccess(for: userIDs[1])
+        
+        guard user1HasAccess && user2HasAccess else {
+            throw NSError(
+                domain: "com.cheemhang.calendar",
+                code: 403,
+                userInfo: [NSLocalizedDescriptionKey: "Both users must connect their Google Calendar to schedule hangouts"]
+            )
+        }
+        
         // Get busy times for both users from their linked calendars
         var allBusyTimes: [(start: Date, end: Date)] = []
         
@@ -160,7 +175,11 @@ class CalendarService {
             print("CalendarService: Found \(user1BusyTimes.count) busy times for user1")
         } catch {
             print("Error getting busy times for user1: \(error.localizedDescription)")
-            // Continue even if we can't get busy times for one user
+            throw NSError(
+                domain: "com.cheemhang.calendar", 
+                code: 500,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve calendar data for one of the users"]
+            )
         }
         
         // Get user2's busy times
@@ -170,13 +189,11 @@ class CalendarService {
             print("CalendarService: Found \(user2BusyTimes.count) busy times for user2")
         } catch {
             print("Error getting busy times for user2: \(error.localizedDescription)")
-            // Continue even if we can't get busy times for one user
-        }
-        
-        // If we couldn't get busy times for either user, fallback to realistic mock data
-        if allBusyTimes.isEmpty {
-            print("CalendarService: No busy times retrieved, using realistic mock data")
-            return generateRealisticAvailability(startDate: startDate, endDate: endDate, duration: duration)
+            throw NSError(
+                domain: "com.cheemhang.calendar", 
+                code: 500,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve calendar data for one of the users"]
+            )
         }
         
         // Sort busy times chronologically
@@ -222,7 +239,6 @@ class CalendarService {
     func getCalendarToken(for userId: String) async throws -> String {
         do {
             // Attempt to get token from Firestore
-            let db = Firestore.firestore()
             let docRef = db.collection("users").document(userId).collection("tokens").document("calendar")
             
             let document = try await docRef.getDocument()
@@ -576,7 +592,6 @@ class CalendarService {
     
     // Method to save calendar token for a user
     func saveCalendarToken(for userId: String, accessToken: String, refreshToken: String? = nil, expirationDate: Date? = nil) async throws {
-        let db = Firestore.firestore()
         let docRef = db.collection("users").document(userId).collection("tokens").document("calendar")
         
         var tokenData: [String: Any] = ["accessToken": accessToken]
@@ -596,71 +611,60 @@ class CalendarService {
     // Method to check if a user has connected their Google Calendar
     func hasCalendarAccess(for userId: String) async -> Bool {
         do {
-            let db = Firestore.firestore()
-            let docRef = db.collection("users").document(userId).collection("tokens").document("calendar")
-            
-            let document = try await docRef.getDocument()
-            return document.exists && document.data()?["accessToken"] != nil
+            let document = try await db.collection("users").document(userId).collection("tokens").document("calendar").getDocument()
+            return document.exists
         } catch {
             print("Error checking calendar access: \(error.localizedDescription)")
             return false
         }
     }
     
-    // Method to get authenticated GIDGoogleUser and save token
+    // Authenticate and save calendar token
     func authenticateAndSaveCalendarAccess(for userId: String) async throws {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            throw NSError(domain: "com.unhinged.calendar", code: 500, 
+                  userInfo: [NSLocalizedDescriptionKey: "Could not get Firebase client ID"])
+        }
+        
+        // Get the top view controller
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootViewController = windowScene.windows.first?.rootViewController else {
-            throw CalendarServiceError.invalidResponse
+            throw NSError(domain: "com.unhinged.calendar", code: 500, 
+                  userInfo: [NSLocalizedDescriptionKey: "Could not get root view controller"])
         }
         
-        // Get Google Sign In client ID from Firebase
-        guard let clientID = FirebaseApp.app()?.options.clientID else {
-            throw NSError(domain: "com.cheemhang.calendar", code: -1, userInfo: [NSLocalizedDescriptionKey: "Firebase configuration error"])
+        // Configure GIDSignIn
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+        
+        // Sign in with Google and request calendar scope
+        let result = try await GIDSignIn.sharedInstance.signIn(
+            withPresenting: rootViewController,
+            hint: nil, 
+            additionalScopes: ["https://www.googleapis.com/auth/calendar", 
+                             "https://www.googleapis.com/auth/calendar.events"]
+        )
+        
+        // Save the token to Firestore
+        var data: [String: Any] = [
+            "accessToken": result.user.accessToken.tokenString,
+            "updatedAt": Timestamp(date: Date())
+        ]
+        
+        // Add expiration date if available
+        if let expirationDate = result.user.accessToken.expirationDate {
+            data["expirationDate"] = Timestamp(date: expirationDate)
         }
         
-        let signInConfig = GIDConfiguration(clientID: clientID)
+        // Add refresh token
+        data["refreshToken"] = result.user.refreshToken?.tokenString ?? ""
         
-        // Request calendar scope
-        let scopes = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"]
-        
-        do {
-            // Try to restore existing sign-in
-            if GIDSignIn.sharedInstance.hasPreviousSignIn() {
-                let user = try await GIDSignIn.sharedInstance.restorePreviousSignIn()
-                
-                // Check if we need to request additional scopes
-                let grantedScopes = user.grantedScopes ?? []
-                let needsAdditionalScopes = scopes.contains { !grantedScopes.contains($0) }
-                
-                if needsAdditionalScopes {
-                    // Request additional scopes using signIn method with the right parameters
-                    let result = try await GIDSignIn.sharedInstance.signIn(
-                        withPresenting: rootViewController,
-                        hint: nil,
-                        additionalScopes: scopes
-                    )
-                    
-                    try await saveTokenFromUser(result.user, userId: userId)
-                    print("Updated calendar token with new scopes")
-                } else {
-                    // Use existing token
-                    try await saveTokenFromUser(user, userId: userId)
-                    print("Used existing Google Sign-In token")
-                }
-            } else {
-                // New sign-in
-                let result = try await GIDSignIn.sharedInstance.signIn(
-                    withPresenting: rootViewController
-                )
-                
-                try await saveTokenFromUser(result.user, userId: userId)
-                print("New Google Sign-In successful")
-            }
-        } catch {
-            print("Error in Google Sign-In: \(error.localizedDescription)")
-            throw error
+        // Add email if available
+        if let email = result.user.profile?.email {
+            data["email"] = email
         }
+        
+        try await db.collection("users").document(userId).collection("tokens").document("calendar").setData(data)
     }
     
     // Helper to save token from GIDGoogleUser
@@ -668,10 +672,11 @@ class CalendarService {
         // Google Sign-In v6+ has non-optional tokens but different access pattern
         let accessToken = user.accessToken.tokenString
         
-        // Handle refresh token - refreshToken itself isn't optional, but might be nil
+        // Handle refresh token - check if we have a non-empty refresh token
         var refreshTokenString: String? = nil
-        if user.refreshToken != nil {
-            refreshTokenString = user.refreshToken.tokenString
+        let refreshToken = user.refreshToken
+        if refreshToken != nil && !refreshToken.tokenString.isEmpty {
+            refreshTokenString = refreshToken.tokenString
         }
         
         try await saveCalendarToken(
@@ -680,5 +685,39 @@ class CalendarService {
             refreshToken: refreshTokenString,
             expirationDate: user.accessToken.expirationDate
         )
+    }
+    
+    // Get available time slots based on calendar (stub implementation)
+    func getAvailableTimeSlots(for userId: String, duration: Int, startDate: Date, endDate: Date) async -> [TimeSlot] {
+        // This would normally query the Google Calendar API for free/busy information
+        // For now, we'll return dummy data
+        
+        var timeSlots: [TimeSlot] = []
+        let calendar = Calendar.current
+        
+        // Generate time slots for the next week
+        for day in 0..<7 {
+            guard let date = calendar.date(byAdding: .day, value: day, to: startDate) else { continue }
+            
+            // Generate 3 random slots per day
+            for _ in 0..<3 {
+                // Random hour between 9 AM and 5 PM
+                let hour = Int.random(in: 9...17)
+                
+                var components = calendar.dateComponents([.year, .month, .day], from: date)
+                components.hour = hour
+                components.minute = 0
+                
+                guard let slotStart = calendar.date(from: components),
+                      let slotEnd = calendar.date(byAdding: .minute, value: duration, to: slotStart) else {
+                    continue
+                }
+                
+                let timeSlot = TimeSlot(startTime: slotStart, endTime: slotEnd)
+                timeSlots.append(timeSlot)
+            }
+        }
+        
+        return timeSlots
     }
 } 

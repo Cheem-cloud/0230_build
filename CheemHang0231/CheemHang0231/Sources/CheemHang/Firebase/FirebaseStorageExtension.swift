@@ -1,5 +1,5 @@
 import SwiftUI
-import FirebaseStorage
+@preconcurrency import FirebaseStorage
 
 // Extension for Firebase Storage functions
 extension Storage {
@@ -28,10 +28,13 @@ extension Storage {
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
         
+        // Use a local copy for capture in the continuation
+        let imageRefCopy = imageRef
+        
         // Upload with progress monitoring
         print("DEBUG: Starting upload...")
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<URL, Error>) in
-            let uploadTask = imageRef.putData(scaledImageData, metadata: metadata)
+            let uploadTask = imageRefCopy.putData(scaledImageData, metadata: metadata)
             
             // Monitor upload progress
             uploadTask.observe(.progress) { snapshot in
@@ -47,7 +50,7 @@ extension Storage {
                 
                 // Delay slightly to ensure metadata is available
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    imageRef.downloadURL { url, error in
+                    imageRefCopy.downloadURL { url, error in
                         if let error = error {
                             print("DEBUG: Error getting download URL: \(error.localizedDescription)")
                             continuation.resume(throwing: error)
@@ -85,7 +88,7 @@ extension Storage {
                             switch nsError.code {
                             case 404:
                                 print("DEBUG: The path doesn't exist or you don't have permission")
-                            case 401, 403:
+                            case 403:
                                 print("DEBUG: User is not authorized to perform the operation")
                             case -999:
                                 print("DEBUG: User canceled the operation")

@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+import UserNotifications
 
 @MainActor
 class HangoutsViewModel: ObservableObject {
@@ -23,12 +24,16 @@ class HangoutsViewModel: ObservableObject {
             .sorted { $0.startDate < $1.startDate }
     }
     
+    var declinedHangouts: [Hangout] {
+        return hangouts.filter { $0.status == .declined }
+            .sorted { $0.startDate > $1.startDate } // Most recent first
+    }
+    
     var pastHangouts: [Hangout] {
         let now = Date()
         return hangouts.filter { 
             ($0.status == .accepted && $0.startDate < now) || 
             $0.status == .completed || 
-            $0.status == .declined ||
             $0.status == .cancelled
         }
         .sorted { $0.startDate > $1.startDate } // Most recent first
@@ -37,11 +42,13 @@ class HangoutsViewModel: ObservableObject {
     func loadHangouts() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
+        print("🔄 HangoutsViewModel - Starting loadHangouts() for user: \(userId)")
         isLoading = true
         
         Task {
             do {
                 let fetchedHangouts = try await firestoreService.getHangouts(for: userId)
+                print("✅ HangoutsViewModel - Loaded \(fetchedHangouts.count) hangouts")
                 
                 // Pre-load all personas for each hangout
                 var allPersonaIds = Set<String>()
@@ -50,25 +57,67 @@ class HangoutsViewModel: ObservableObject {
                     allPersonaIds.insert(hangout.inviteePersonaID)
                 }
                 
+                print("🧩 HangoutsViewModel - Need to load \(allPersonaIds.count) personas")
+                
                 // Fetch all needed personas
                 var personaMap: [String: Persona] = [:]
                 for personaId in allPersonaIds {
-                    if let userId = Auth.auth().currentUser?.uid,
-                       let persona = try? await firestoreService.getPersona(personaId, for: userId) {
-                        personaMap[personaId] = persona
+                    // Determine the user ID for this persona by checking each hangout
+                    for hangout in fetchedHangouts {
+                        if hangout.creatorPersonaID == personaId {
+                            // This is a creator persona
+                            if let persona = try? await firestoreService.getPersona(personaId, for: hangout.creatorID) {
+                                personaMap[personaId] = persona
+                                print("DEBUG: Loaded creator persona: \(persona.name) for ID \(personaId)")
+                                break
+                            }
+                        } else if hangout.inviteePersonaID == personaId {
+                            // This is an invitee persona
+                            if let persona = try? await firestoreService.getPersona(personaId, for: hangout.inviteeID) {
+                                personaMap[personaId] = persona
+                                print("DEBUG: Loaded invitee persona: \(persona.name) for ID \(personaId)")
+                                break
+                            }
+                        }
                     }
                 }
+                
+                print("👤 HangoutsViewModel - Loaded \(personaMap.count) personas")
                 
                 DispatchQueue.main.async {
                     self.hangouts = fetchedHangouts
                     self.personaDetails = personaMap
                     self.isLoading = false
+                    print("🔄 HangoutsViewModel - UI updated with \(self.hangouts.count) hangouts")
+                    print("📊 Pending: \(self.pendingHangouts.count), Upcoming: \(self.upcomingHangouts.count), Declined: \(self.declinedHangouts.count), Past: \(self.pastHangouts.count)")
+                    
+                    // Update app badge count with number of pending requests
+                    self.updateAppBadgeCount()
                 }
             } catch {
+                print("❌ HangoutsViewModel - Error loading hangouts: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.error = error
                     self.isLoading = false
                 }
+            }
+        }
+    }
+    
+    func updateAppBadgeCount() {
+        // Count pending hangouts where current user is the invitee (requests to respond to)
+        guard let currentUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let pendingForUser = hangouts.filter { 
+            $0.status == .pending && $0.inviteeID == currentUserId
+        }
+        
+        // Set the app badge to the number of pending requests
+        UNUserNotificationCenter.current().setBadgeCount(pendingForUser.count) { error in
+            if let error = error {
+                print("❌ Error setting badge count: \(error.localizedDescription)")
+            } else {
+                print("✅ App badge count updated to \(pendingForUser.count)")
             }
         }
     }
@@ -131,7 +180,7 @@ class HangoutsViewModel: ObservableObject {
     }
     
     func updateHangoutStatus(hangout: Hangout, newStatus: HangoutStatus) async {
-        guard let _ = hangout.id else { return }
+        guard let hangoutId = hangout.id else { return }
         
         do {
             var updatedHangout = hangout
@@ -139,6 +188,22 @@ class HangoutsViewModel: ObservableObject {
             updatedHangout.updatedAt = Date()
             
             try await firestoreService.updateHangout(updatedHangout)
+            
+            // If the status changed to accepted or declined, send notification to creator
+            if (newStatus == .accepted || newStatus == .declined) {
+                // Get the responder's persona name
+                let responderPersonaId = hangout.inviteePersonaID
+                if let responderPersona = personaDetails[responderPersonaId] {
+                    // Send notification to the creator
+                    NotificationService.shared.sendHangoutResponseNotification(
+                        to: hangout.creatorID,
+                        accepted: newStatus == .accepted,
+                        responderName: responderPersona.name,
+                        hangoutTitle: hangout.title,
+                        hangoutId: hangoutId
+                    )
+                }
+            }
             
             // If the hangout was accepted, add to calendar
             if newStatus == .accepted,

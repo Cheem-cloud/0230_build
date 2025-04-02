@@ -7,7 +7,7 @@ struct PersonasView: View {
     var body: some View {
         List {
             ForEach(viewModel.personas) { persona in
-                PersonaCard(persona: persona)
+                ProfilePersonaCard(persona: persona)
                     .padding(.vertical, 4)
             }
             .onDelete(perform: viewModel.deletePersona)
@@ -36,12 +36,12 @@ struct PersonasView: View {
     }
 }
 
-struct PersonaCard: View {
+struct ProfilePersonaCard: View {
     let persona: Persona
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 16) {
                 if let avatarURL = persona.avatarURL, !avatarURL.isEmpty {
                     AsyncImage(url: URL(string: avatarURL)) { image in
                         image
@@ -49,43 +49,58 @@ struct PersonaCard: View {
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
                         Image(systemName: "person.fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray)
                     }
                     .frame(width: 60, height: 60)
                     .clipShape(Circle())
+                    .background(
+                        Circle()
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
                 } else {
                     Image(systemName: "person.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.gray)
                         .frame(width: 60, height: 60)
-                        .background(Color.gray.opacity(0.3))
+                        .background(Color.gray.opacity(0.1))
                         .clipShape(Circle())
+                        .background(
+                            Circle()
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
                 }
                 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(persona.name)
-                        .font(.title3)
-                        .bold()
+                        .font(.headline)
+                        .lineLimit(1)
                     
                     Text(persona.description)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    
+                    if persona.isDefault {
+                        Text("Default")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.blue)
+                            .clipShape(Capsule())
+                            .padding(.top, 4)
+                    }
                 }
-            }
-            
-            if persona.isDefault {
-                Text("Default Persona")
-                    .font(.caption)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.blue)
-                    .clipShape(Capsule())
+                .padding(.vertical, 4)
             }
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
     }
 }
 

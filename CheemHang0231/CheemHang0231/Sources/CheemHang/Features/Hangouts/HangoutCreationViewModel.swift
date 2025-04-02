@@ -1,7 +1,7 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
-import CheemHang
+import Foundation
 
 // Make the class sendable to fix issues with closures
 @MainActor
@@ -24,7 +24,16 @@ class HangoutCreationViewModel: ObservableObject {
             let snapshot = try await db.collection("users").document(userId).collection("personas").getDocuments()
             
             let loadedPersonas = snapshot.documents.compactMap { doc -> Persona? in
-                try? doc.data(as: Persona.self)
+                do {
+                    var persona = try doc.data(as: Persona.self)
+                    // Manually set the ID since @DocumentID isn't working correctly
+                    persona.id = doc.documentID
+                    print("DEBUG: Loaded persona: \(persona.name) with ID: \(persona.id ?? "unknown")")
+                    return persona
+                } catch {
+                    print("DEBUG: Error decoding persona: \(error.localizedDescription)")
+                    return nil
+                }
             }
             
             personas = loadedPersonas
@@ -35,22 +44,37 @@ class HangoutCreationViewModel: ObservableObject {
         }
     }
     
-    func loadAvailableTimes(date: Date, duration: TimeInterval, partnerPersonaId: String, partnerUserId: String) async {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+    func loadAvailableTimes(date: Date, partnerUserId: String, partnerPersonaId: String, duration: TimeInterval) async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            self.error = NSError(domain: "com.cheemhang.calendar", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
+            return
+        }
         
         // No need for DispatchQueue in @MainActor
         self.isLoadingTimes = true
         self.availableTimeSlots = []
         
         do {
+            // First check if both users have calendar access
+            let userHasAccess = await calendarService.hasCalendarAccess(for: userId)
+            let partnerHasAccess = await calendarService.hasCalendarAccess(for: partnerUserId)
+            
+            guard userHasAccess && partnerHasAccess else {
+                throw NSError(
+                    domain: "com.cheemhang.calendar",
+                    code: 403,
+                    userInfo: [NSLocalizedDescriptionKey: "Both users must connect their Google Calendar to schedule hangouts"]
+                )
+            }
+            
             // Get both user's calendar data
             let userCalendarData = try await db.collection("users").document(userId).collection("personas").document(partnerPersonaId).getDocument()
             let partnerCalendarData = try await db.collection("users").document(partnerUserId).collection("personas").document(partnerPersonaId).getDocument()
             
             // Check if we have calendar access for both users
             guard
-                let userCalendarData = userCalendarData,
-                let partnerCalendarData = partnerCalendarData,
+                userCalendarData.exists,
+                partnerCalendarData.exists,
                 let userToken = userCalendarData.data()?["calendarAccessToken"] as? String,
                 let partnerToken = partnerCalendarData.data()?["calendarAccessToken"] as? String
             else {
@@ -131,7 +155,7 @@ class HangoutCreationViewModel: ObservableObject {
                     }
                     
                     if !hasConflict {
-                        timeSlots.append(TimeSlot(startTime: startTime, endTime: endTime))
+                        timeSlots.append(TimeSlot(start: startTime, end: endTime))
                     }
                 }
             }
@@ -156,31 +180,128 @@ class HangoutCreationViewModel: ObservableObject {
             
             if let startTime = calendar.date(from: startComponents) {
                 let endTime = startTime.addingTimeInterval(duration)
-                slots.append(TimeSlot(startTime: startTime, endTime: endTime))
+                slots.append(TimeSlot(start: startTime, end: endTime))
             }
         }
         
         return slots
     }
     
-    func createHangout(with partnerPersona: Persona, type: HangoutType, timeSlot: TimeSlot) async {
+    func createHangout(with partnerPersona: Persona, type: HangoutType, customTypeDescription: String? = nil, timeSlot: TimeSlot) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         isLoading = true
         
         do {
             // Get the current user's default persona
+            print("🔍 DEBUG: Fetching personas for user: \(userId)")
             let userPersonas = try await db.collection("users").document(userId).collection("personas").getDocuments()
-            let defaultPersona = userPersonas.documents.compactMap({ try? $0.data(as: Persona.self) }).first(where: { $0.isDefault })
+            print("🔍 DEBUG: Found \(userPersonas.documents.count) personas")
+            
+            // Log all personas for debugging
+            let loadedPersonas = userPersonas.documents.compactMap { doc -> Persona? in
+                do {
+                    var persona = try doc.data(as: Persona.self)
+                    // Manually set the ID since @DocumentID isn't working correctly
+                    persona.id = doc.documentID
+                    print("🔍 DEBUG: Persona: id=\(persona.id ?? "nil"), name=\(persona.name), isDefault=\(persona.isDefault)")
+                    return persona
+                } catch {
+                    print("🔍 DEBUG: Error decoding persona: \(error.localizedDescription)")
+                    return nil
+                }
+            }
+            
+            let defaultPersona = loadedPersonas.first(where: { $0.isDefault })
+            
+            if let defaultPersona = defaultPersona {
+                print("✅ DEBUG: Found default persona: \(defaultPersona.name) with ID: \(defaultPersona.id ?? "unknown")")
+            } else {
+                print("❌ DEBUG: No default persona found")
+                
+                // Try to find any persona if no default is set
+                let anyPersona = loadedPersonas.first
+                if let anyPersona = anyPersona {
+                    print("⚠️ DEBUG: No default persona, but found another persona: \(anyPersona.name) with ID: \(anyPersona.id ?? "unknown")")
+                    
+                    // Attempt to set this persona as default
+                    var updatedPersona = anyPersona
+                    updatedPersona.isDefault = true
+                    
+                    if let personaId = updatedPersona.id {
+                        print("🔄 DEBUG: Setting persona \(personaId) as default")
+                        try await db.collection("users").document(userId).collection("personas")
+                            .document(personaId).setData(["isDefault": true], merge: true)
+                        
+                        // Use this persona for the hangout
+                        print("✅ DEBUG: Using newly designated default persona")
+                        
+                        // Continue with this persona
+                        let hangoutTypeLabel = type == .other && customTypeDescription != nil ? 
+                                        customTypeDescription! : 
+                                        type.rawValue
+                        
+                        // Create the hangout data
+                        let hangout = Hangout(
+                            title: "\(hangoutTypeLabel) with \(partnerPersona.name)",
+                            description: type == .other && customTypeDescription != nil ?
+                                "A custom \(customTypeDescription!.lowercased()) hangout between \(updatedPersona.name) and \(partnerPersona.name)." :
+                                "A \(type.rawValue.lowercased()) hangout between \(updatedPersona.name) and \(partnerPersona.name).",
+                            startDate: timeSlot.start,
+                            endDate: timeSlot.end,
+                            location: nil,
+                            creatorID: userId,
+                            creatorPersonaID: personaId,
+                            inviteeID: partnerPersona.userID,
+                            inviteePersonaID: partnerPersona.id ?? "",
+                            status: .pending
+                        )
+                        
+                        print("🔷 CREATING HANGOUT - Creator: \(userId), Invitee: \(partnerPersona.userID)")
+                        print("🔷 Hangout details - Type: \(hangoutTypeLabel), Start: \(timeSlot.start)")
+                        
+                        // Save to Firestore
+                        let firestoreService = FirestoreService()
+                        let hangoutId = try await firestoreService.createHangout(hangout)
+                        
+                        print("✅ HANGOUT CREATED SUCCESSFULLY with ID: \(hangoutId)")
+                        print("📩 The invitee (\(partnerPersona.userID)) should now see this request")
+                        
+                        // Send notification to invitee
+                        NotificationService.shared.sendNewHangoutRequestNotification(
+                            to: partnerPersona.userID,
+                            from: updatedPersona.name,
+                            hangoutTitle: hangout.title,
+                            hangoutId: hangoutId
+                        )
+                        
+                        // Add to both users' calendars if they have calendar access
+                        try? await calendarService.createCalendarEvent(
+                            for: hangout,
+                            userIDs: [userId, partnerPersona.userID]
+                        )
+                        
+                        isLoading = false
+                        return
+                    }
+                }
+            }
             
             guard let userPersona = defaultPersona, let userPersonaId = userPersona.id else {
-                throw NSError(domain: "com.cheemhang.hangout", code: 1, userInfo: [NSLocalizedDescriptionKey: "No default persona found"])
+                throw NSError(domain: "com.cheemhang.hangout", code: 1, userInfo: [NSLocalizedDescriptionKey: "No default persona found or persona has no ID"])
             }
+            
+            // Determine the hangout title and description
+            let hangoutTypeLabel = type == .other && customTypeDescription != nil ? 
+                               customTypeDescription! : 
+                               type.rawValue
             
             // Create the hangout data
             let hangout = Hangout(
-                title: "\(type.rawValue) with \(partnerPersona.name)",
-                description: "A \(type.rawValue.lowercased()) hangout between \(userPersona.name) and \(partnerPersona.name).",
+                title: "\(hangoutTypeLabel) with \(partnerPersona.name)",
+                description: type == .other && customTypeDescription != nil ?
+                    "A custom \(customTypeDescription!.lowercased()) hangout between \(userPersona.name) and \(partnerPersona.name)." :
+                    "A \(type.rawValue.lowercased()) hangout between \(userPersona.name) and \(partnerPersona.name).",
                 startDate: timeSlot.start,
                 endDate: timeSlot.end,
                 location: nil,
@@ -191,11 +312,23 @@ class HangoutCreationViewModel: ObservableObject {
                 status: .pending
             )
             
+            print("🔷 CREATING HANGOUT - Creator: \(userId), Invitee: \(partnerPersona.userID)")
+            print("🔷 Hangout details - Type: \(hangoutTypeLabel), Start: \(timeSlot.start)")
+            
             // Save to Firestore
             let firestoreService = FirestoreService()
             let hangoutId = try await firestoreService.createHangout(hangout)
             
-            print("Hangout created successfully with ID: \(hangoutId)")
+            print("✅ HANGOUT CREATED SUCCESSFULLY with ID: \(hangoutId)")
+            print("📩 The invitee (\(partnerPersona.userID)) should now see this request")
+            
+            // Send notification to invitee
+            NotificationService.shared.sendNewHangoutRequestNotification(
+                to: partnerPersona.userID,
+                from: userPersona.name,
+                hangoutTitle: hangout.title,
+                hangoutId: hangoutId
+            )
             
             // Add to both users' calendars if they have calendar access
             try? await calendarService.createCalendarEvent(

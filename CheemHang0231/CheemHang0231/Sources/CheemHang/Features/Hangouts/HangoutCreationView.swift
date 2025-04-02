@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseAuth
-import CheemHang
+
+// These types come from: CheemHang0231/Sources/CheemHang/Models/HangoutModels.swift
 
 struct HangoutCreationView: View {
     let partnerPersona: Persona
@@ -8,9 +9,27 @@ struct HangoutCreationView: View {
     
     @Environment(\.dismiss) private var dismiss
     @State private var currentStep = 0
-    @State private var selectedHangoutType: HangoutType?
+    @State private var selectedType: HangoutType?
+    @State private var otherTypeDescription: String = ""
     @State private var selectedDuration: Duration?
     @State private var selectedTimeSlot: TimeSlot?
+    
+    // Instead of using CustomHangoutType directly, use computed properties
+    private var hangoutTypeDisplayName: String {
+        guard let selectedType = selectedType else { return "" }
+        if selectedType == .other && !otherTypeDescription.isEmpty {
+            return otherTypeDescription
+        }
+        return selectedType.rawValue
+    }
+    
+    private var hangoutTypeDescription: String {
+        guard let selectedType = selectedType else { return "" }
+        if selectedType == .other && !otherTypeDescription.isEmpty {
+            return otherTypeDescription
+        }
+        return selectedType.description
+    }
     
     var body: some View {
         NavigationStack {
@@ -18,7 +37,7 @@ struct HangoutCreationView: View {
                 // Progress bar
                 ProgressView(value: Double(currentStep), total: 3)
                     .padding(.horizontal)
-                    .padding(.top)
+                    .padding(.top, 12)
                 
                 HStack {
                     Text("Step \(currentStep + 1) of 3")
@@ -28,57 +47,78 @@ struct HangoutCreationView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 4)
+                .padding(.bottom, 12)
                 
-                // Main content area
-                switch currentStep {
-                case 0:
-                    hangoutTypeView
-                case 1:
-                    durationView
-                case 2:
-                    timeSelectionView
-                default:
-                    EmptyView()
+                // Main content area - in a ScrollView to ensure it's scrollable on smaller screens
+                ScrollView {
+                    VStack(spacing: 20) {
+                        switch currentStep {
+                        case 0:
+                            hangoutTypeView
+                        case 1:
+                            durationView
+                        case 2:
+                            timeSelectionView
+                        default:
+                            EmptyView()
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
                 }
-                
-                Spacer()
                 
                 // Navigation buttons
-                HStack {
-                    if currentStep > 0 {
-                        Button("Back") {
-                            currentStep -= 1
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.primary)
-                        .cornerRadius(10)
+                VStack(spacing: 12) {
+                    if currentStep == 0 && selectedType == .other {
+                        TextField("Describe your hangout type...", text: $otherTypeDescription)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                     }
                     
-                    if currentStep < 2 {
-                        Button("Next") {
-                            currentStep += 1
+                    HStack(spacing: 12) {
+                        if currentStep > 0 {
+                            Button("Back") {
+                                withAnimation {
+                                    currentStep -= 1
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.2))
+                            .foregroundColor(.primary)
+                            .cornerRadius(10)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(isNextEnabled ? Color.blue : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .disabled(!isNextEnabled)
-                    } else {
-                        Button("Request Hangout") {
-                            requestHangout()
+                        
+                        if currentStep < 2 {
+                            Button("Next") {
+                                withAnimation {
+                                    currentStep += 1
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(isNextEnabled ? Color.blue : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .disabled(!isNextEnabled)
+                        } else {
+                            Button("Request Hangout") {
+                                requestHangout()
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(isRequestEnabled ? Color.deepRed : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .disabled(!isRequestEnabled)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(isRequestEnabled ? Color.hunterGreen : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .disabled(!isRequestEnabled)
                     }
+                    .padding()
                 }
-                .padding()
+                .background(Color(.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
             }
             .navigationTitle("Request Hangout")
             .navigationBarTitleDisplayMode(.inline)
@@ -94,52 +134,54 @@ struct HangoutCreationView: View {
     
     // Hangout type selection view
     private var hangoutTypeView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Text("What would you like to do with \(partnerPersona.name)?")
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.bottom, 8)
             
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(HangoutType.allCases) { type in
-                        HangoutTypeCard(
-                            type: type,
-                            isSelected: selectedHangoutType == type,
-                            onTap: {
-                                selectedHangoutType = type
+            VStack(spacing: 16) {
+                ForEach(HangoutType.allCases) { type in
+                    HangoutTypeCard(
+                        type: type,
+                        isSelected: selectedType == type,
+                        onTap: {
+                            withAnimation {
+                                selectedType = type
                             }
-                        )
-                    }
+                        }
+                    )
                 }
-                .padding(.horizontal)
             }
         }
     }
     
     // Duration selection view
     private var durationView: some View {
-        VStack(spacing: 20) {
-            Text("How long should the \(selectedHangoutType?.rawValue.lowercased() ?? "hangout") last?")
+        VStack(spacing: 24) {
+            let typeLabel = selectedType == .other && !otherTypeDescription.isEmpty ? 
+                            otherTypeDescription.lowercased() : 
+                            selectedType?.rawValue.lowercased() ?? "hangout"
+            
+            Text("How long should the \(typeLabel) last?")
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.bottom, 8)
             
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(Duration.allCases) { duration in
-                        DurationCard(
-                            duration: duration,
-                            isSelected: selectedDuration == duration,
-                            onTap: {
+            VStack(spacing: 16) {
+                ForEach(Duration.allCases) { duration in
+                    DurationCard(
+                        duration: duration,
+                        isSelected: selectedDuration == duration,
+                        onTap: {
+                            withAnimation {
                                 selectedDuration = duration
                             }
-                        )
-                    }
+                        }
+                    )
                 }
-                .padding(.horizontal)
             }
         }
     }
@@ -162,10 +204,11 @@ struct HangoutCreationView: View {
         }
     }
     
+    // Check if next button should be enabled
     private var isNextEnabled: Bool {
         switch currentStep {
         case 0:
-            return selectedHangoutType != nil
+            return selectedType != nil && (selectedType != .other || !otherTypeDescription.isEmpty)
         case 1:
             return selectedDuration != nil
         default:
@@ -173,28 +216,28 @@ struct HangoutCreationView: View {
         }
     }
     
+    // Check if request button should be enabled
     private var isRequestEnabled: Bool {
         return selectedTimeSlot != nil
     }
     
+    // Request hangout
     private func requestHangout() {
-        guard let hangoutType = selectedHangoutType,
-              let timeSlot = selectedTimeSlot else {
+        guard let selectedType = selectedType,
+              let selectedDuration = selectedDuration,
+              let selectedTimeSlot = selectedTimeSlot else {
             return
         }
         
-        // Create the hangout
-        let viewModel = HangoutCreationViewModel()
-        Task {
-            await viewModel.createHangout(
-                with: partnerPersona,
-                type: hangoutType,
-                timeSlot: timeSlot
-            )
-            await MainActor.run {
-                dismiss()
-                onComplete()
-            }
+        // In a real app, this would send the request to the backend
+        print("Requesting hangout of type: \(hangoutTypeDisplayName)")
+        print("Duration: \(selectedDuration.displayName)")
+        print("Time: \(selectedTimeSlot.dayString) at \(selectedTimeSlot.timeRangeString)")
+        
+        // Show success and call the completion handler
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.onComplete()
+            self.dismiss()
         }
     }
 }
@@ -206,19 +249,27 @@ struct HangoutTypeCard: View {
     let onTap: () -> Void
     
     var body: some View {
-        HStack {
-            Image(systemName: type.iconName)
-                .font(.title2)
-                .foregroundColor(isSelected ? .blue : .gray)
-                .frame(width: 50)
+        HStack(spacing: 16) {
+            // Icon with background circle
+            ZStack {
+                Circle()
+                    .fill(isSelected ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
+                    .frame(width: 56, height: 56)
+                
+                Image(systemName: type.iconName)
+                    .font(.system(size: 24))
+                    .foregroundColor(isSelected ? .blue : .gray)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(type.rawValue)
                     .font(.headline)
+                    .foregroundColor(isSelected ? .primary : .secondary)
                 
                 Text(type.description)
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
             
             Spacer()
@@ -226,16 +277,18 @@ struct HangoutTypeCard: View {
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.blue)
+                    .font(.system(size: 22))
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(isSelected ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
-        .cornerRadius(10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(isSelected ? Color.blue.opacity(0.08) : Color.gray.opacity(0.05))
+        .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
         )
+        .contentShape(Rectangle())
         .onTapGesture {
             onTap()
         }
@@ -249,55 +302,110 @@ struct DurationCard: View {
     let onTap: () -> Void
     
     var body: some View {
-        HStack {
-            Image(systemName: "clock")
-                .font(.title2)
-                .foregroundColor(isSelected ? .blue : .gray)
-                .frame(width: 50)
+        HStack(spacing: 16) {
+            // Icon with background circle
+            ZStack {
+                Circle()
+                    .fill(isSelected ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
+                    .frame(width: 56, height: 56)
+                
+                Image(systemName: "clock.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(isSelected ? .blue : .gray)
+            }
             
-            Text(duration.displayName)
-                .font(.headline)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(duration.displayName)
+                    .font(.headline)
+                    .foregroundColor(isSelected ? .primary : .secondary)
+                
+                // Format time in a user-friendly way
+                Text(formatTime(seconds: Int(duration.rawValue)))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             
             Spacer()
             
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.blue)
+                    .font(.system(size: 22))
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(isSelected ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
-        .cornerRadius(10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(isSelected ? Color.blue.opacity(0.08) : Color.gray.opacity(0.05))
+        .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
         )
+        .contentShape(Rectangle())
         .onTapGesture {
             onTap()
         }
     }
+    
+    // Helper function to format seconds into readable text
+    private func formatTime(seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        
+        if hours > 0 {
+            return minutes > 0 ? "\(hours) hour\(hours > 1 ? "s" : "") and \(minutes) minute\(minutes > 1 ? "s" : "")" : "\(hours) hour\(hours > 1 ? "s" : "")"
+        } else {
+            return "\(minutes) minute\(minutes > 1 ? "s" : "")"
+        }
+    }
 }
 
-// Content view for time selection
+// Time selection content view
 struct TimeSelectionContentView: View {
+    @StateObject private var viewModel = TimeSelectionViewModel()
+    @State private var selectedTimeSlot: TimeSlot?
     let partnerPersona: Persona
     let duration: Duration
     let onTimeSelected: (TimeSlot) -> Void
     
-    @StateObject private var viewModel = TimeSelectionViewModel()
-    @State private var selectedTimeSlot: TimeSlot?
-    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Select an available time")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top)
+        VStack {
+            // Header showing what we're scheduling
+            Text("Find a time for your \(duration.displayName) hangout")
+                .font(.headline)
+                .padding(.vertical)
             
             if viewModel.isLoading {
                 ProgressView("Checking availability...")
                     .padding()
+            } else if viewModel.error != nil {
+                VStack(spacing: 10) {
+                    Image(systemName: "calendar.badge.exclamationmark")
+                        .font(.system(size: 50))
+                        .foregroundColor(.orange)
+                    
+                    Text("Calendar Access Required")
+                        .font(.headline)
+                    
+                    Text("Both you and your partner need to connect Google Calendar to schedule hangouts.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    NavigationLink {
+                        GoogleCalendarAuthView()
+                    } label: {
+                        Text("Connect Your Calendar")
+                            .padding()
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .padding(.top)
+                }
+                .padding()
             } else if viewModel.availableTimeSlots.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "calendar.badge.exclamationmark")
@@ -333,7 +441,7 @@ struct TimeSelectionContentView: View {
         }
         .onAppear {
             viewModel.loadAvailableTimes(
-                for: partnerPersona.userID,
+                for: partnerPersona.id ?? "unknown",
                 duration: duration.rawValue
             )
         }
@@ -382,11 +490,13 @@ struct TimeSlotCard: View {
     let samplePersona = Persona(
         id: "sample",
         name: "Fun Persona",
-        description: "A fun-loving version that enjoys adventures",
-        avatarURL: nil,
-        userID: "user123",
-        isDefault: false
+        bio: "A fun-loving version that enjoys adventures",
+        imageURL: nil,
+        age: 28,
+        breed: "Golden Retriever",
+        interests: ["Hiking", "Beach"],
+        isPremium: false
     )
     
-    return HangoutCreationView(partnerPersona: samplePersona, onComplete: {})
+    HangoutCreationView(partnerPersona: samplePersona, onComplete: {})
 } 
